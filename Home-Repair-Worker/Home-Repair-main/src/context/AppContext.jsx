@@ -37,7 +37,7 @@ export function AppProvider({ children }) {
       currentPage, navigate, user, setUser, bookings, addBooking, 
       notifications, setNotifications, searchQuery, setSearchQuery, 
       selectedCategory, setSelectedCategory, selectedService, setSelectedService, 
-      toast, showToast, isLoading 
+      toast, showToast, isLoading
     }}>
       {children}
     </AppContext.Provider>

@@ -1,7 +1,5 @@
 import { AppProvider } from './context/AppContext'
 import { Toast } from './components/Toast'
-import { Navbar } from './components/Navbar'
-import { BottomNav } from './components/BottomNav'
 import { Footer } from './components/Footer'
 import { Router } from './components/Router'
 
@@ -16,10 +14,10 @@ export default function App() {
           .animate-bounce-in { animation: bounce-in 0.4s ease-out; }
         `}</style>
         <Toast />
-        <Navbar />
-        <Router />
+        <main className="relative">
+          <Router />
+        </main>
         <Footer />
-        <BottomNav />
       </div>
     </AppProvider>
   )
