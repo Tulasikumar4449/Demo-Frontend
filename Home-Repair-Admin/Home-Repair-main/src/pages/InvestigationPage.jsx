@@ -57,10 +57,10 @@ export function InvestigationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen w-full bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="bg-white border-b border-gray-200 w-full">
+        <div className="w-full px-8 py-6">
           <button
             onClick={() => navigate('adminDashboard')}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
@@ -95,26 +95,32 @@ export function InvestigationPage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="w-full px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Left Column - Complaint Details */}
           <div className="lg:col-span-2 space-y-6">
             
             {/* Complaint Overview */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Complaint Overview</h2>
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Complaint Overview</h2>
               
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Complainant</p>
-                    <p className="font-semibold text-gray-900">{complaint.complainant.name}</p>
+                    <p className="font-semibold text-gray-900 flex items-center gap-2">
+                      {complaint.complainant.name}
+                      <button className="text-blue-600 hover:text-blue-800"><Icon name="phone" size={16} /></button>
+                    </p>
                     <p className="text-sm text-gray-600">{complaint.complainant.email || complaint.complainant.phone}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Against</p>
-                    <p className="font-semibold text-gray-900">{complaint.against.name}</p>
+                    <p className="font-semibold text-gray-900 flex items-center gap-2">
+                      {complaint.against.name}
+                      <button className="text-blue-600 hover:text-blue-800"><Icon name="phone" size={16} /></button>
+                    </p>
                     <p className="text-sm text-gray-600">{complaint.against.workerId || complaint.against.customerId}</p>
                   </div>
                 </div>
@@ -143,8 +149,8 @@ export function InvestigationPage() {
             </div>
 
             {/* Communication */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Communication Log</h2>
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Communication Log</h2>
               
               {/* Message with Customer */}
               <div className="mb-6">
@@ -206,8 +212,8 @@ export function InvestigationPage() {
             </div>
 
             {/* Investigation Notes */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Investigation Notes</h2>
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Investigation Notes</h2>
               
               <div className="space-y-3 mb-4">
                 {investigation?.notes?.map((note, idx) => (
@@ -242,6 +248,18 @@ export function InvestigationPage() {
 
           {/* Right Column - Actions */}
           <div className="space-y-6">
+            {/* Process Steps */}
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+              <h3 className="font-bold text-gray-900 mb-4">Investigation Steps</h3>
+              <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700">
+                <li>Review complaint details</li>
+                <li>Contact customer & worker</li>
+                <li>Gather evidence</li>
+                <li>Document notes</li>
+                <li>Take enforcement action</li>
+                <li>Close case</li>
+              </ol>
+            </div>
             
             {/* Quick Info */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">

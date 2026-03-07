@@ -1,18 +1,48 @@
 import { useState } from 'react'
 import { useApp } from '../context/AppContext'
 import { Icon } from '../icons/Icon'
-import { ComplaintCard } from '../components/admin/ComplaintCard'
 
 export function AdminDashboardPage() {
   const { navigate, adminUser, complaints, investigations, enforcementActions, activeTab, setActiveTab } = useApp()
   const [filterSeverity, setFilterSeverity] = useState('all')
   const [filterStatus, setFilterStatus] = useState('all')
-  
+  const [sortBy, setSortBy] = useState('date') // 'date', 'criticality', 'status'
+  const [sortOrder, setSortOrder] = useState('desc') // 'asc', 'desc'
+
   // Filter complaints
   const filteredComplaints = complaints.filter(complaint => {
     if (filterSeverity !== 'all' && complaint.severity !== filterSeverity) return false
     if (filterStatus !== 'all' && complaint.status !== filterStatus) return false
     return true
+  })
+
+  // Sort complaints
+  const sortedComplaints = [...filteredComplaints].sort((a, b) => {
+    let aValue, bValue
+
+    switch (sortBy) {
+      case 'criticality':
+        const severityOrder = { critical: 4, high: 3, medium: 2, low: 1 }
+        aValue = severityOrder[a.severity]
+        bValue = severityOrder[b.severity]
+        break
+      case 'status':
+        const statusOrder = { pending: 1, under_investigation: 2, resolved: 3 }
+        aValue = statusOrder[a.status]
+        bValue = statusOrder[b.status]
+        break
+      case 'date':
+      default:
+        aValue = new Date(a.date + ' ' + a.timestamp)
+        bValue = new Date(b.date + ' ' + b.timestamp)
+        break
+    }
+
+    if (sortOrder === 'asc') {
+      return aValue > bValue ? 1 : -1
+    } else {
+      return aValue < bValue ? 1 : -1
+    }
   })
 
   // Stats
@@ -30,15 +60,43 @@ export function AdminDashboardPage() {
     }
   }
 
+  const handleSort = (column) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(column)
+      setSortOrder('desc')
+    }
+  }
+
+  const getSeverityColor = (severity) => {
+    switch (severity) {
+      case 'critical': return 'text-red-600 bg-red-100'
+      case 'high': return 'text-orange-600 bg-orange-100'
+      case 'medium': return 'text-yellow-600 bg-yellow-100'
+      case 'low': return 'text-green-600 bg-green-100'
+      default: return 'text-gray-600 bg-gray-100'
+    }
+  }
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'pending': return 'text-yellow-600 bg-yellow-100'
+      case 'under_investigation': return 'text-blue-600 bg-blue-100'
+      case 'resolved': return 'text-green-600 bg-green-100'
+      default: return 'text-gray-600 bg-gray-100'
+    }
+  }
+
   if (!adminUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-white mb-4">Admin Access Required</h1>
-          <p className="text-white/60 mb-6">Please login to access the admin portal</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">Admin Access Required</h1>
+          <p className="text-gray-600 mb-6">Please login to access the admin portal</p>
           <button
             onClick={() => navigate('adminLogin')}
-            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all"
+            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
           >
             Login to Admin Portal
           </button>
@@ -50,97 +108,74 @@ export function AdminDashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between mb-4">
+      <div className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Saheya Admin Portal</h1>
-              <p className="text-blue-100">Welcome back, {adminUser.name} ({adminUser.role})</p>
+              <h1 className="text-2xl font-bold text-gray-900">Saheya Admin Portal</h1>
+              <p className="text-gray-600">Welcome back, {adminUser.name} ({adminUser.role})</p>
             </div>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate('landing')}
-                className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-lg hover:bg-white/20 transition-all flex items-center gap-2"
+                className="px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2"
               >
                 <Icon name="home" size={18} />
-                <span className="hidden sm:inline">Home</span>
+                <span>Home</span>
+              </button>
+              <button
+                onClick={() => navigate('adminPerformance')}
+                className="px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2"
+              >
+                <Icon name="barChart" size={18} />
+                <span>Performance</span>
               </button>
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 bg-red-500/80 backdrop-blur-sm rounded-lg hover:bg-red-500 transition-all flex items-center gap-2"
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
               >
                 <Icon name="logout" size={18} />
-                <span className="hidden sm:inline">Logout</span>
+                <span>Logout</span>
               </button>
-            </div>
-          </div>
-
-          {/* Stats Overview */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6">
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-              <div className="text-3xl font-bold">{stats.total}</div>
-              <div className="text-blue-100 text-sm">Total</div>
-            </div>
-            <div className="bg-yellow-500/20 backdrop-blur-sm rounded-xl p-4">
-              <div className="text-3xl font-bold text-yellow-300">{stats.pending}</div>
-              <div className="text-yellow-100 text-sm">Pending</div>
-            </div>
-            <div className="bg-orange-500/20 backdrop-blur-sm rounded-xl p-4">
-              <div className="text-3xl font-bold text-orange-300">{stats.underInvestigation}</div>
-              <div className="text-orange-100 text-sm">Investigating</div>
-            </div>
-            <div className="bg-green-500/20 backdrop-blur-sm rounded-xl p-4">
-              <div className="text-3xl font-bold text-green-300">{stats.resolved}</div>
-              <div className="text-green-100 text-sm">Resolved</div>
-            </div>
-            <div className="bg-red-500/20 backdrop-blur-sm rounded-xl p-4">
-              <div className="text-3xl font-bold text-red-300">{stats.critical}</div>
-              <div className="text-red-100 text-sm">Critical</div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Tabs */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
-          <div className="flex overflow-x-auto">
-            {[
-              { id: 'all', label: 'All Complaints', icon: 'list', count: stats.total },
-              { id: 'customer', label: 'From Customers', icon: 'user', count: complaints.filter(c => c.type === 'customer').length },
-              { id: 'worker', label: 'From Workers', icon: 'briefcase', count: complaints.filter(c => c.type === 'worker').length },
-              { id: 'pending', label: 'Pending Action', icon: 'clock', count: stats.pending },
-              { id: 'investigations', label: 'Active Investigations', icon: 'search', count: stats.underInvestigation }
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-6 py-4 font-medium transition-all whitespace-nowrap border-b-2 ${
-                  activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600 bg-blue-50'
-                    : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
-              >
-                <Icon name={tab.icon} size={18} />
-                <span>{tab.label}</span>
-                <span className="px-2 py-0.5 bg-gray-200 rounded-full text-xs">{tab.count}</span>
-              </button>
-            ))}
+      {/* Stats Overview */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+            <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+            <div className="text-sm text-gray-600">Total Cases</div>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+            <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+            <div className="text-sm text-gray-600">Pending</div>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+            <div className="text-2xl font-bold text-blue-600">{stats.underInvestigation}</div>
+            <div className="text-sm text-gray-600">Investigating</div>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+            <div className="text-2xl font-bold text-green-600">{stats.resolved}</div>
+            <div className="text-sm text-gray-600">Resolved</div>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+            <div className="text-2xl font-bold text-red-600">{stats.critical}</div>
+            <div className="text-sm text-gray-600">Critical</div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
           <div className="flex flex-wrap gap-4">
             <div className="flex-1 min-w-[200px]">
-              <label className="text-xs font-semibold text-gray-600 mb-2 block uppercase tracking-wide">
-                Filter by Severity
-              </label>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">Filter by Severity</label>
               <select
                 value={filterSeverity}
                 onChange={(e) => setFilterSeverity(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Severities</option>
                 <option value="critical">Critical</option>
@@ -150,13 +185,11 @@ export function AdminDashboardPage() {
               </select>
             </div>
             <div className="flex-1 min-w-[200px]">
-              <label className="text-xs font-semibold text-gray-600 mb-2 block uppercase tracking-wide">
-                Filter by Status
-              </label>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">Filter by Status</label>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Statuses</option>
                 <option value="pending">Pending</option>
@@ -164,65 +197,126 @@ export function AdminDashboardPage() {
                 <option value="resolved">Resolved</option>
               </select>
             </div>
-            <div className="flex-1 min-w-[200px]">
-              <label className="text-xs font-semibold text-gray-600 mb-2 block uppercase tracking-wide">
-                Search
-              </label>
-              <input
-                type="text"
-                placeholder="Search complaints..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+          </div>
+        </div>
+
+        {/* Incidents Table */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900">Incidents ({sortedComplaints.length})</h2>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('id')}
+                  >
+                    Case ID
+                    {sortBy === 'id' && (
+                      <Icon name="chevronDown" size={14} className={`ml-1 inline ${sortOrder === 'asc' ? 'rotate-180' : ''}`} />
+                    )}
+                  </th>
+                  <th
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('criticality')}
+                  >
+                    Criticality
+                    {sortBy === 'criticality' && (
+                      <Icon name="chevronDown" size={14} className={`ml-1 inline ${sortOrder === 'asc' ? 'rotate-180' : ''}`} />
+                    )}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Raised By
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Short Description
+                  </th>
+                  <th
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('date')}
+                  >
+                    Time
+                    {sortBy === 'date' && (
+                      <Icon name="chevronDown" size={14} className={`ml-1 inline ${sortOrder === 'asc' ? 'rotate-180' : ''}`} />
+                    )}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Opened By
+                  </th>
+                  <th
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('status')}
+                  >
+                    Status
+                    {sortBy === 'status' && (
+                      <Icon name="chevronDown" size={14} className={`ml-1 inline ${sortOrder === 'asc' ? 'rotate-180' : ''}`} />
+                    )}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {sortedComplaints.map((complaint) => (
+                  <tr key={complaint.id} className="hover:bg-white/20">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      INC{String(complaint.id).padStart(6, '0')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getSeverityColor(complaint.severity)}`}>
+                        {complaint.severity.toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {complaint.complainant.name}
+                      <div className="text-xs text-gray-500 capitalize">{complaint.type}</div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
+                      <div className="truncate" title={complaint.description}>
+                        {complaint.description.length > 60
+                          ? complaint.description.substring(0, 60) + '...'
+                          : complaint.description
+                        }
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">{complaint.category}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <div>{complaint.date}</div>
+                      <div className="text-xs text-gray-500">{complaint.timestamp}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {adminUser.name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(complaint.status)}`}>
+                        {complaint.status.replace('_', ' ').toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <button
+                        onClick={() => navigate('investigation', { complaintId: complaint.id })}
+                        className="text-blue-600 hover:text-blue-900 transition-colors"
+                      >
+                        Investigate
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {sortedComplaints.length === 0 && (
+            <div className="text-center py-12">
+              <Icon name="inbox" size={48} className="mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No incidents found</h3>
+              <p className="text-gray-500">Adjust your filters to see more results</p>
             </div>
-          </div>
-        </div>
-
-        {/* Complaints Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredComplaints.map(complaint => (
-            <ComplaintCard key={complaint.id} complaint={complaint} />
-          ))}
-        </div>
-
-        {filteredComplaints.length === 0 && (
-          <div className="text-center py-12">
-            <Icon name="inbox" size={64} className="mx-auto text-gray-300 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">No Complaints Found</h3>
-            <p className="text-gray-500">Adjust your filters or check back later</p>
-          </div>
-        )}
-
-        {/* Recent Enforcement Actions */}
-        <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Enforcement Actions</h2>
-          <div className="space-y-3">
-            {enforcementActions.slice(0, 5).map(action => (
-              <div key={action.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    action.actionType === 'warning' ? 'bg-yellow-100 text-yellow-600' :
-                    action.actionType === 'fine' ? 'bg-red-100 text-red-600' :
-                    action.actionType === 'suspension' ? 'bg-orange-100 text-orange-600' :
-                    'bg-blue-100 text-blue-600'
-                  }`}>
-                    <Icon name={
-                      action.actionType === 'warning' ? 'alertTriangle' :
-                      action.actionType === 'fine' ? 'dollarSign' :
-                      action.actionType === 'suspension' ? 'ban' : 'checkCircle'
-                    } size={20} />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">{action.target.name}</p>
-                    <p className="text-sm text-gray-600">{action.description}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900 capitalize">{action.actionType}</p>
-                  <p className="text-xs text-gray-500">{action.date}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          )}
         </div>
       </div>
     </div>

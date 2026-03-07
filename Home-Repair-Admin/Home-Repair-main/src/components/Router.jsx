@@ -12,6 +12,7 @@ import { AdminLoginPage } from '../pages/AdminLoginPage'
 import { AdminRegisterPage } from '../pages/AdminRegisterPage'
 import { AdminVerificationPage } from '../pages/AdminVerificationPage'
 import { AdminDashboardPage } from '../pages/AdminDashboardPage'
+import { AdminPerformancePage } from '../pages/AdminPerformancePage'
 import { InvestigationPage } from '../pages/InvestigationPage'
 import { AdminSettingsPage } from '../pages/AdminSettingsPage'
 import { AdminNotificationsPage } from '../pages/AdminNotificationsPage'
@@ -33,6 +34,7 @@ export function Router() {
     adminRegister: AdminRegisterPage,
     adminVerification: AdminVerificationPage,
     adminDashboard: AdminDashboardPage,
+    adminPerformance: AdminPerformancePage,
     investigation: InvestigationPage,
     adminSettings: AdminSettingsPage,
     adminNotifications: AdminNotificationsPage,
